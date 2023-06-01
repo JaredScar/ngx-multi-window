@@ -38,7 +38,7 @@
           <input type="text" class="form-control" id="messageInput" #messageInput required>
         </div>
         <button type="submit" class="btn btn-primary"
-                (click)="sendMessagesToAllWindows(messageInput.value); messageInput.value = ''">Submit
+                (click)="sendMessagesToAllWindowsWithBroadcast(messageInput.value); messageInput.value = ''">Submit
         </button>
       </form>
     </div>

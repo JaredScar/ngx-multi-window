@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@angular/core';
+import {HostListener, Inject, Injectable, Optional} from '@angular/core';
 import { Location } from '@angular/common';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { ignoreElements } from 'rxjs/operators';
@@ -108,6 +108,11 @@ export class MultiWindowService {
     this.start();
   }
 
+  @HostListener('window:beforeunload')
+  private handleBeforeUnload() {
+    this.storageService.removeLocalItem(this.generateWindowKey(this.myWindow.id));
+  }
+
   get name(): string {
     return this.myWindow.name;
   }
@@ -164,6 +169,7 @@ export class MultiWindowService {
    * during service construction (see {@link MultiWindowService} constructor)
    */
   public start(): void {
+    console.log("START:", this.storageService);
     if (!this.heartbeatId) {
       this.heartbeatId = setInterval(this.heartbeat, this.config.heartbeat);
     }
@@ -305,6 +311,7 @@ export class MultiWindowService {
     }
 
     this.storageService.setWindowName(windowKey);
+    console.log(this.storageService);
 
     // Scan for already existing windows
     this.scanForWindows();
@@ -368,7 +375,8 @@ export class MultiWindowService {
 
       if (now - appWindow.heartbeat > this.config.windowTimeout) {
         // The window seems to be dead, remove the entry from the localstorage
-        this.storageService.removeLocalItem(this.generateWindowKey(appWindow.id));
+        console.log("[DEBUG] WINDOW WOULD OF BEEN KILLED...!");
+        //this.storageService.removeLocalItem(this.generateWindowKey(appWindow.id));
       }
 
       // Update the windows name and heartbeat value in the list of known windows (that's what we iterate over)

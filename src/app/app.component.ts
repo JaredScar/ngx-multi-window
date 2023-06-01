@@ -17,6 +17,8 @@ export class AppComponent implements OnInit {
 
   newName: string;
 
+  private broadcastChannel: BroadcastChannel = new BroadcastChannel("broadcaster");
+
   @HostListener('window:unload')
   unloadHandler() {
     this.multiWindowService.saveWindow();
@@ -34,11 +36,16 @@ export class AppComponent implements OnInit {
     this.windows = this.multiWindowService.getKnownWindows();
     this.subs.add(this.multiWindowService.onMessage().subscribe((value: Message) => {
       if (value.senderId != this.ownId) {
-        this.pause(10);
+        this.pause(50);
         console.log('Received a message from ' + value.senderId + ': ' + JSON.stringify(value.data));
       }
       console.log("Reading message...");
     }));
+
+    this.broadcastChannel.onmessage = (event) => {
+      this.pause(50);
+      console.log("GOT EVENT: ", event);
+    }
   }
 
   public pause(milliseconds) {
@@ -50,6 +57,16 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.multiWindowService.onWindows().subscribe(knownWindows => this.windows = knownWindows);
+  }
+
+  public sendMessagesToAllWindowsWithBroadcast(message: string, dontSendAgain: boolean = false) {
+    for (let i=0; i < 100; i++) {
+      const json = {
+        type: 'UPDATE_DATA',
+        value: { dataID: (i + (dontSendAgain ? 100 : 0)) }
+      }
+      this.broadcastChannel.postMessage(json);
+    }
   }
 
   public sendMessagesToAllWindows(message: string, dontSendAgain: boolean = false) {
@@ -80,7 +97,7 @@ export class AppComponent implements OnInit {
           });
       }
     }
-    this.pause(2);
+    this.pause(1);
     if (!dontSendAgain)
       this.sendMessagesToAllWindows(message, true);
     console.log("[MAIN] Completed sends...");

@@ -119,6 +119,7 @@ export class StorageService {
   }
 
   private removeItem(storage: Storage, key: string): void {
+    window.localStorage.removeItem(key);
     storage.removeItem(key);
   }
 
